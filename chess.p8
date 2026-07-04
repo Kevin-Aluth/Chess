@@ -139,6 +139,7 @@ function create_pawn(black,row,col)
 	local p={
 		bl=black,
 		sp=sprite,
+		first_turn=true,
 		draw=function(self,ypos,xpos)
 			spr(self.sp,xpos,ypos)
 		end,
@@ -154,11 +155,18 @@ function create_pawn(black,row,col)
 			if y==limit then return end
 			
 			add(moves,{y=y+adv,x=x})
-			if x!=1 then
+			if x!=1 and
+			has_enemy(s,y+adv,x-1) then 
 				add(moves,{y=y+adv,x=x-1})
 			end
-			if x!=8 then
+			if x!=8 and
+			has_enemy(s,y+adv,x+1) then
 				add(moves,{y=y+adv,x=x+1})
+			end
+			if s.first_turn and
+			mtx[y+(adv*2)][x]==nil then
+				add(moves,{y=y+(adv*2),x=x})
+				s.first_turn=false
 			end
 		end,
 		move=function(s,y,x)
@@ -180,6 +188,12 @@ function do_move(s,curr_y,curr_x,y,x)
 		end
 	end
 	return false
+end
+
+function has_enemy(s,y,x)
+	return
+		mtx[y][x]!=nil and
+		mtx[y][x].bl!=s.bl
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
