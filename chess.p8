@@ -16,6 +16,7 @@ function _draw()
 	draw_board()
 	sel:draw()
 	draw_pieces()
+	draw_possible_moves()
 end
 -->8
 -- board
@@ -68,6 +69,7 @@ function create_selector()
 			end
 		end,
 		draw=function(s)
+			--draw selector
 			local colour=8
 			if s.bl then colour=2 end
 			rectfill(
@@ -76,7 +78,7 @@ function create_selector()
 				(s.x-1)*16+15,
 				(s.y-1)*16+15,
 				colour)
-			spr(colour,s.x*16+4,s.y*16+4)
+			--draw selected spot
 			if sel_spot.x!=-1 then
 				rectfill(
 					(sel_spot.x-1)*16,
@@ -131,6 +133,17 @@ function draw_pieces()
 		end
 	end
 end
+
+function draw_possible_moves()
+	for m in all(moves) do
+		rectfill(
+			(m.x-1)*16+8,
+			(m.y-1)*16+8,
+			(m.x-1)*16+15-8,
+			(m.y-1)*16+15-8,
+			3)
+	end
+end
 -->8
 -- pieces
 function create_pawn(black,row,col)
@@ -154,19 +167,24 @@ function create_pawn(black,row,col)
 			
 			if y==limit then return end
 			
-			add(moves,{y=y+adv,x=x})
+			if not 
+			has_enemy(s,y+adv,x) and not
+			has_someone(y+adv,x) then
+				add(moves,{y=y+adv,x=x})
+				if s.first_turn and not
+				has_someone(y+(adv*2),x) then
+					add(moves,{y=y+(adv*2),x=x})
+				end
+			end
+			
 			if x!=1 and
 			has_enemy(s,y+adv,x-1) then 
 				add(moves,{y=y+adv,x=x-1})
 			end
+			
 			if x!=8 and
 			has_enemy(s,y+adv,x+1) then
 				add(moves,{y=y+adv,x=x+1})
-			end
-			if s.first_turn and
-			mtx[y+(adv*2)][x]==nil then
-				add(moves,{y=y+(adv*2),x=x})
-				s.first_turn=false
 			end
 		end,
 		move=function(s,y,x)
@@ -184,6 +202,10 @@ function do_move(s,curr_y,curr_x,y,x)
 			sel_spot.x=-1
 			sel_spot.y=-1
 			sel_piece=nil
+			if s.first_turn then
+				s.first_turn=false
+			end
+			moves={}
 			return true
 		end
 	end
@@ -194,6 +216,10 @@ function has_enemy(s,y,x)
 	return
 		mtx[y][x]!=nil and
 		mtx[y][x].bl!=s.bl
+end
+
+function has_someone(y,x)
+	return mtx[y][x]!=nil
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
