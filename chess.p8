@@ -28,12 +28,16 @@ function create_board()
 	for i=1,8 do
 		mtx[i]={}
 	end
-	-- draw pawns
+	-- create pawns
 	for i=1,8 do
 		create_pawn(false,7,i)
 		create_pawn(true,2,i)
-		create_rook(true,1,1)
 	end
+	-- create rooks
+	create_rook(true,1,1)
+	create_rook(true,1,8)
+	create_rook(false,8,1)
+	create_rook(false,8,8)
 	
 	moves={}
 end
