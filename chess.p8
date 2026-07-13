@@ -17,6 +17,12 @@ function _draw()
 	sel:draw()
 	draw_pieces()
 	draw_possible_moves()
+--	if sel_spot != nil then
+--		print(sel_spot.x.." "..sel_spot.y,0)
+--	end
+--	for move in all(moves) do
+--		print(move.x.." "..move.y,11)
+--	end
 end
 -->8
 -- board
@@ -39,6 +45,25 @@ function create_board()
 	create_rook(false,8,1)
 	create_rook(false,8,8)
 	
+	-- create bishops
+	create_bishop(true,1,3)
+	create_bishop(true,1,6)
+	create_bishop(false,8,3)
+	create_bishop(false,8,6)
+	
+	-- create horses
+	create_horse(true,1,2)
+	create_horse(true,1,7)
+	create_horse(false,8,2)
+	create_horse(false,8,7)
+	
+	-- create queens
+	create_queen(true,1,4)
+	create_queen(false,8,4)
+	
+	-- create kings
+	create_king(true,1,5)
+	create_king(false,8,5)
 	moves={}
 end
 
@@ -231,6 +256,162 @@ function create_rook(black,row,col)
 	mtx[row][col]=p
 end
 
+function create_bishop(black,row,col)
+	local sprite=5
+	if black then sprite=6 end
+	local p={
+		bl=black,
+		sp=sprite,
+		get_moves=function(s)
+			local x=sel_spot.x
+			local y=sel_spot.y
+			moves={}
+			for i=1,8 do
+				local x1,y1=x+i,y+i
+				if x1>8 or y1>8 then break end
+				if check_eat_spot(s,y1,x1) then
+					break
+				end
+			end
+			for i=1,8 do
+				local x1,y1=x-i,y+i
+				if x1<1 or y1>8 then break end
+				if check_eat_spot(s,y1,x1) then
+					break
+				end
+			end
+			for i=1,8 do
+				local x1,y1=x-i,y-i
+				if x1<1 or y1<1 then break end
+				if check_eat_spot(s,y1,x1) then
+					break
+				end
+			end
+			for i=1,8 do
+				local x1,y1=x+i,y-i
+				if x1>8 or y1<1 then break end
+				if check_eat_spot(s,y1,x1) then
+					break
+				end
+			end
+		end
+	}
+	mtx[row][col]=p
+end
+
+function create_horse(black,row,col)
+	local sprite=7
+	if black then sprite=8 end
+	local p={
+		bl=black,
+		sp=sprite,
+		get_moves=function(s)
+			local x=sel_spot.x
+			local y=sel_spot.y
+			moves={}
+			check_eat_spot(s,y+1,x+2)
+			check_eat_spot(s,y-1,x+2)
+			check_eat_spot(s,y+1,x-2)
+			check_eat_spot(s,y-1,x-2)
+			check_eat_spot(s,y+2,x+1)
+			check_eat_spot(s,y+2,x-1)
+			check_eat_spot(s,y-2,x+1)
+			check_eat_spot(s,y-2,x-1)
+		end
+	}
+	mtx[row][col]=p
+end
+
+function create_queen(black,row,col)
+	local sprite=9
+	if black then sprite=10 end
+	local p={
+		bl=black,
+		sp=sprite,
+		get_moves=function(s)
+			local x=sel_spot.x
+			local y=sel_spot.y
+			moves={}
+			for i=x+1,8 do
+				if i>8 then break end
+				if check_eat_spot(s,y,i) then
+					break
+				end
+			end
+			for i=x-1,1,-1 do
+				if i<1 then break end
+				if check_eat_spot(s,y,i) then
+					break
+				end
+			end
+			for i=y+1,8 do
+				if i>8 then break end
+				if check_eat_spot(s,i,x) then
+					break
+				end
+			end
+			for i=y-1,1,-1 do
+				if i<1 then break end
+				if check_eat_spot(s,i,x) then
+					break
+				end
+			end
+			for i=1,8 do
+				local x1,y1=x+i,y+i
+				if x1>8 or y1>8 then break end
+				if check_eat_spot(s,y1,x1) then
+					break
+				end
+			end
+			for i=1,8 do
+				local x1,y1=x-i,y+i
+				if x1<1 or y1>8 then break end
+				if check_eat_spot(s,y1,x1) then
+					break
+				end
+			end
+			for i=1,8 do
+				local x1,y1=x-i,y-i
+				if x1<1 or y1<1 then break end
+				if check_eat_spot(s,y1,x1) then
+					break
+				end
+			end
+			for i=1,8 do
+				local x1,y1=x+i,y-i
+				if x1>8 or y1<1 then break end
+				if check_eat_spot(s,y1,x1) then
+					break
+				end
+			end
+		end
+	}
+	mtx[row][col]=p
+end
+
+function create_king(black,row,col)
+	local sprite=11
+	if black then sprite=12 end
+	local p={
+		bl=black,
+		sp=sprite,
+		get_moves=function(s)
+			local x=sel_spot.x
+			local y=sel_spot.y
+			moves={}
+			check_eat_spot(s,y+1,x+1)
+			check_eat_spot(s,y-1,x-1)
+			check_eat_spot(s,y+1,x-1)
+			check_eat_spot(s,y-1,x+1)
+			check_eat_spot(s,y,x+1)
+			check_eat_spot(s,y,x-1)
+			check_eat_spot(s,y+1,x)
+			check_eat_spot(s,y-1,x)
+		end
+	}
+	mtx[row][col]=p
+end
+
 function do_move(s,y,x)
 	local curr_y,curr_x=sel_spot.y,sel_spot.x
 	for m in all(moves) do
@@ -271,6 +452,9 @@ function has_someone(y,x)
 end
 
 function check_eat_spot(s,y,x)
+	if y<1 or y>8 or x<1 or x>8 then
+		return false
+	end
 	if has_ally(s,y,x) then 
 		return true 
 	elseif has_enemy(s,y,x) then
@@ -281,11 +465,11 @@ function check_eat_spot(s,y,x)
 	return false
 end
 __gfx__
-00000000000000000000000007077070010110100007700000011000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000000770000001100007777770011111100007700000011000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700007777000011110000777700001111000077770000111100000000000000000000000000000000000000000000000000000000000000000000000000
-00077000007777000011110000777700001111000077770000111100000000000000000000000000000000000000000000000000000000000000000000000000
-00077000000770000001100000777700001111000007700000011000000000000000000000000000000000000000000000000000000000000000000000000000
-00700700000770000001100000777700001111000007700000011000000000000000000000000000000000000000000000000000000000000000000000000000
-00000000007777000011110000777700001111000077770000111100000000000000000000000000000000000000000000000000000000000000000000000000
-00000000077777700111111007777770011111100777777001111110000000000000000000000000000000000000000000000000000000000000000000000000
+00000000000000000000000007077070010110100077770000111100007777000011110007777770011111100007700000011000000000000000000000000000
+00000000000770000001100007777770011111100707707001011010077777700111111007777770011111100077770000111100000000000000000000000000
+00700700007777000011110000777700001111000007700000011000777777701111111070777707101111010007700000011000000000000000000000000000
+00077000007777000011110000777700001111000007700000011000777777701111111070077007100110010077770000111100000000000000000000000000
+00077000000770000001100000777700001111000007700000011000770777701101111000077000000110000077770000111100000000000000000000000000
+00700700000770000001100000777700001111000007700000011000000777000001110000077000000110000077770000111100000000000000000000000000
+00000000007777000011110000777700001111000077770000111100000777000001110000077000000110000007700000011000000000000000000000000000
+00000000077777700111111007777770011111100777777001111110077777700111111007777770011111100777777001111110000000000000000000000000
