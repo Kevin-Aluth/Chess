@@ -183,6 +183,7 @@ function create_pawn(black,row,col)
 		bl=black,
 		sp=sprite,
 		first_turn=true,
+		en_passant=false,
 		get_moves=function(s)
 			local x=sel_spot.x
 			local y=sel_spot.y
@@ -199,18 +200,30 @@ function create_pawn(black,row,col)
 				add(moves,{y=y+adv,x=x})
 				if s.first_turn and not
 				has_someone(y+(adv*2),x) then
-					add(moves,{y=y+(adv*2),x=x})
+					add(moves,{y=y+(adv*2),x=x,double=true})
 				end
 			end
 			
-			if x!=1 and
-			has_enemy(s,y+adv,x-1) then 
-				add(moves,{y=y+adv,x=x-1})
+			if x!=1 then
+				if mtx[y][x-1]!=nil and
+				mtx[y][x-1].bl!=s.bl and
+				mtx[y][x-1].en_passant then
+					add(moves,{y=y+adv,x=x-1,passant="left"})
+				end
+				if has_enemy(s,y+adv,x-1) then 
+					add(moves,{y=y+adv,x=x-1})
+				end
 			end
 			
-			if x!=8 and
-			has_enemy(s,y+adv,x+1) then
-				add(moves,{y=y+adv,x=x+1})
+			if x!=8 then
+				if mtx[y][x+1]!=nil and
+				mtx[y][x+1].bl!=s.bl and
+				mtx[y][x+1].en_passant then
+					add(moves,{y=y+adv,x=x+1,passant="right"})
+				end
+				if has_enemy(s,y+adv,x+1) then
+					add(moves,{y=y+adv,x=x+1})
+				end
 			end
 		end
 	}
@@ -424,6 +437,27 @@ function do_move(s,y,x)
 			if s.first_turn then
 				s.first_turn=false
 			end
+			
+			if m.passant=="left" then
+				mtx[curr_y][curr_x-1]=nil
+			elseif m.passant=="right" then
+				mtx[curr_y][curr_x+1]=nil
+			end
+			
+			for i=1,8 do
+				for j=1,8 do
+					local cell=mtx[i][j]
+					if cell!=nil 
+					and cell.en_passant then
+						cell.en_passant=false
+					end
+				end
+			end
+			
+			if m.double then
+				s.en_passant=true
+			end
+			
 			moves={}
 			return true
 		end
