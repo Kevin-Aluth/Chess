@@ -236,6 +236,7 @@ function create_rook(black,row,col)
 	local p={
 		bl=black,
 		sp=sprite,
+		first_turn=true,
 		get_moves=function(s)
 			local x=sel_spot.x
 			local y=sel_spot.y
@@ -408,6 +409,7 @@ function create_king(black,row,col)
 	local p={
 		bl=black,
 		sp=sprite,
+		first_turn=true,
 		get_moves=function(s)
 			local x=sel_spot.x
 			local y=sel_spot.y
@@ -420,6 +422,23 @@ function create_king(black,row,col)
 			check_eat_spot(s,y,x-1)
 			check_eat_spot(s,y+1,x)
 			check_eat_spot(s,y-1,x)
+			
+			if s.first_turn then
+				if mtx[y][1]!=nil and
+				mtx[y][1].first_turn and
+				mtx[y][2]==nil and
+				mtx[y][3]==nil and
+				mtx[y][4]==nil then
+					add(moves,{x=2,y=y,castle="left"})
+				end
+				
+				if mtx[y][8]!=nil and
+				mtx[y][8].first_turn and
+				mtx[y][7]==nil and
+				mtx[y][6]==nil then
+					add(moves,{x=7,y=y,castle="right"})
+				end
+			end
 		end
 	}
 	mtx[row][col]=p
@@ -442,6 +461,14 @@ function do_move(s,y,x)
 				mtx[curr_y][curr_x-1]=nil
 			elseif m.passant=="right" then
 				mtx[curr_y][curr_x+1]=nil
+			end
+			
+			if m.castle=="left" then
+				mtx[y][3]=mtx[y][1]
+				mtx[y][1]=nil
+			elseif m.castle=="right" then
+				mtx[y][6]=mtx[y][8]
+				mtx[y][8]=nil
 			end
 			
 			for i=1,8 do
